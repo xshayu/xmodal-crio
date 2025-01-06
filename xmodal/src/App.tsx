@@ -1,6 +1,5 @@
-import React, { useState } from 'react'
-import './App.css'
-
+import React, { useState, useEffect, useCallback } from 'react';
+import './App.css';
 
 interface FormData {
   username: string;
@@ -20,12 +19,30 @@ const App: React.FC = () => {
 
   const handleOpen = () => setIsOpen(true);
 
-  const handleClose = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleClose = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       setIsOpen(false);
       resetForm();
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const modal = document.querySelector('.modal');
+      if (modal && e.target === modal) {
+        setIsOpen(false);
+        resetForm();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('click', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [isOpen]);
 
   const resetForm = () => {
     setFormData({
@@ -37,32 +54,38 @@ const App: React.FC = () => {
   };
 
   const validateForm = () => {
-    // Check for empty fields
+    // Email validation
+    if (formData.email) {
+      if (!formData.email.includes('@')) {
+        alert('Invalid email. Please check your email address.');
+        return false;
+      }
+    }
+
+    // Phone validation
+    if (formData.phone) {
+      if (formData.phone.length !== 10 || !/^\d+$/.test(formData.phone)) {
+        alert('Invalid phone number. Please enter a 10-digit phone number.');
+        return false;
+      }
+    }
+
+    // Date validation
+    if (formData.dob) {
+      const selectedDate = new Date(formData.dob);
+      const currentDate = new Date();
+      if (selectedDate > currentDate) {
+        alert('Invalid date of birth. Date cannot be in the future.');
+        return false;
+      }
+    }
+
+    // Check for empty fields last
     for (const [key, value] of Object.entries(formData)) {
       if (!value.trim()) {
         alert(`Please fill in the ${key} field`);
         return false;
       }
-    }
-
-    // Email validation
-    if (!formData.email.includes('@')) {
-      alert('Invalid email. Please check your email address.');
-      return false;
-    }
-
-    // Phone validation
-    if (formData.phone.length !== 10 || !/^\d+$/.test(formData.phone)) {
-      alert('Invalid phone number. Please enter a 10-digit phone number.');
-      return false;
-    }
-
-    // Date validation
-    const selectedDate = new Date(formData.dob);
-    const currentDate = new Date();
-    if (selectedDate > currentDate) {
-      alert('Invalid date of birth. Date cannot be in the future.');
-      return false;
     }
 
     return true;
@@ -142,6 +165,6 @@ const App: React.FC = () => {
       )}
     </div>
   );
-}
+};
 
-export default App
+export default App;
