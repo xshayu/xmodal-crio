@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import './App.css';
 
 interface FormData {
@@ -19,30 +19,13 @@ const App: React.FC = () => {
 
   const handleOpen = () => setIsOpen(true);
 
-  const handleClose = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+  const handleClose = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
+      e.stopPropagation();
       setIsOpen(false);
       resetForm();
     }
-  }, []);
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      const modal = document.querySelector('.modal');
-      if (modal && e.target === modal) {
-        setIsOpen(false);
-        resetForm();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('click', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('click', handleClickOutside);
-    };
-  }, [isOpen]);
+  };
 
   const resetForm = () => {
     setFormData({
@@ -109,12 +92,12 @@ const App: React.FC = () => {
   };
 
   return (
-    <div>
+    <>
       <button onClick={handleOpen}>Open Form</button>
       
       {isOpen && (
         <div className="modal" onClick={handleClose}>
-          <div className="modal-content">
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
             <form onSubmit={handleSubmit}>
               <div>
                 <label htmlFor="username">Username:</label>
@@ -163,7 +146,7 @@ const App: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 
